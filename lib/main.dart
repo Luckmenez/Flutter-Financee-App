@@ -31,6 +31,7 @@ class ExpensesApp extends StatelessWidget {
                   fontFamily: 'OpenSans',
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
         ),
@@ -46,6 +47,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _transactions = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTrasactions {
     return _transactions.where((tr) {
@@ -85,23 +87,67 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('Despesas pessoais')),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _openTransactionFormModal(context),
-          ),
-        ],
+    bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final appBar = AppBar(
+      title: Text(
+        'Despesas pessoais',
+        style: TextStyle(
+          fontSize: 20 * MediaQuery.of(context).textScaleFactor,
+        ),
       ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () => _openTransactionFormModal(context),
+        ),
+        if (isLandscape)
+          IconButton(
+            icon: Icon(_showChart ? Icons.list : Icons.pie_chart),
+            onPressed: () {
+              setState(() {
+                _showChart = !_showChart;
+              });
+            },
+          ),
+      ],
+    );
+    final availableHeight = MediaQuery.of(context).size.height -
+        appBar.preferredSize.height -
+        MediaQuery.of(context).padding.top;
+
+    return Scaffold(
+      appBar: appBar,
       body: SingleChildScrollView(
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              Chart(_recentTrasactions),
-              TransactionList(_transactions, _removeTransaction),
+              // if (isLandscape)
+              //   Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       Text('Exibir gráfico'),
+              //       Switch(
+              //         value: _showChart,
+              //         onChanged: (value) {
+              //           setState(() {
+              //             _showChart = value;
+              //           });
+              //         },
+              //       ),
+              //     ],
+              //   ),
+              if (_showChart || !isLandscape)
+                Container(
+                  height: availableHeight * (isLandscape ? 0.7 : 0.25),
+                  child: Chart(_recentTrasactions),
+                ),
+              if (!_showChart || !isLandscape)
+                Container(
+                  height: availableHeight * 0.75,
+                  child: TransactionList(_transactions, _removeTransaction),
+                ),
             ],
           ),
         ),
