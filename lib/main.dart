@@ -99,6 +99,10 @@ class _MyHomePageState extends State<MyHomePage> {
     final mediaQuery = MediaQuery.of(context);
     bool isLandscape = mediaQuery.orientation == Orientation.landscape;
 
+    final iconList = Platform.isIOS ? CupertinoIcons.refresh : Icons.list;
+    final iconChart =
+        Platform.isIOS ? CupertinoIcons.refresh : Icons.show_chart;
+
     final actions = [
       _getIconButton(
         Platform.isIOS ? CupertinoIcons.add : Icons.add,
@@ -106,7 +110,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       if (isLandscape)
         _getIconButton(
-          _showChart ? Icons.list : Icons.pie_chart,
+          _showChart ? iconList : iconChart,
           () {
             setState(() {
               _showChart = !_showChart;
@@ -121,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: actions,
-            ),
+            ) as PreferredSizeWidget,
           )
         : AppBar(
             title: Text(
@@ -131,91 +135,58 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             actions: actions,
-          );
+          ) as PreferredSizeWidget;
 
     final availableHeight = mediaQuery.size.height -
         appBar.preferredSize.height -
         mediaQuery.padding.top;
 
-    final bodypage = SingleChildScrollView(
+    final bodypage = SafeArea(
       child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            // if (isLandscape)
-            //   Row(
-            //     mainAxisAlignment: MainAxisAlignment.center,
-            //     children: [
-            //       Text('Exibir gráfico'),
-            //       Switch.adaptive(
-            //         activeColor: Theme.of(context).accentColor,
-            //         value: _showChart,
-            //         onChanged: (value) {
-            //           setState(() {
-            //             _showChart = value;
-            //           });
-            //         },
-            //       ),
-            //     ],
-            //   ),
-            if (_showChart || !isLandscape)
-              Container(
-                height: availableHeight * (isLandscape ? 0.7 : 0.25),
-                child: Chart(_recentTrasactions),
-              ),
-            if (!_showChart || !isLandscape)
-              Container(
-                height: availableHeight * (isLandscape ? 1 : 0.25),
-                child: TransactionList(_transactions, _removeTransaction),
-              ),
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              // if (isLandscape)
+              //   Row(
+              //     mainAxisAlignment: MainAxisAlignment.center,
+              //     children: [
+              //       Text('Exibir gráfico'),
+              //       Switch.adaptive(
+              //         activeColor: Theme.of(context).accentColor,
+              //         value: _showChart,
+              //         onChanged: (value) {
+              //           setState(() {
+              //             _showChart = value;
+              //           });
+              //         },
+              //       ),
+              //     ],
+              //   ),
+              if (_showChart || !isLandscape)
+                Container(
+                  height: availableHeight * (isLandscape ? 0.7 : 0.25),
+                  child: Chart(_recentTrasactions),
+                ),
+              if (!_showChart || !isLandscape)
+                Container(
+                  height: availableHeight * (isLandscape ? 1 : 0.75),
+                  child: TransactionList(_transactions, _removeTransaction),
+                ),
+            ],
+          ),
         ),
       ),
     );
 
     return Platform.isIOS
         ? CupertinoPageScaffold(
-            navigationBar: appBar,
+            navigationBar: appBar as ObstructingPreferredSizeWidget,
             child: bodypage,
           )
         : Scaffold(
             appBar: appBar,
-            body: SingleChildScrollView(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    // if (isLandscape)
-                    //   Row(
-                    //     mainAxisAlignment: MainAxisAlignment.center,
-                    //     children: [
-                    //       Text('Exibir gráfico'),
-                    //       Switch.adaptive(
-                    //         activeColor: Theme.of(context).accentColor,
-                    //         value: _showChart,
-                    //         onChanged: (value) {
-                    //           setState(() {
-                    //             _showChart = value;
-                    //           });
-                    //         },
-                    //       ),
-                    //     ],
-                    //   ),
-                    if (_showChart || !isLandscape)
-                      Container(
-                        height: availableHeight * (isLandscape ? 0.7 : 0.25),
-                        child: Chart(_recentTrasactions),
-                      ),
-                    if (!_showChart || !isLandscape)
-                      Container(
-                        height: availableHeight * (isLandscape ? 1 : 0.25),
-                        child:
-                            TransactionList(_transactions, _removeTransaction),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+            body: bodypage,
             floatingActionButton: Platform.isIOS
                 ? Container()
                 : FloatingActionButton(
